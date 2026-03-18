@@ -1,23 +1,25 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import AddNote from '@/components/AddNote'
+import Link from 'next/link'
 
 export default async function CompanyPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createServerSupabase()
 
   const { data: company } = await supabase
     .from('companies')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   const { data: notes } = await supabase
     .from('notes')
     .select('*')
-    .eq('company_id', params.id)
+    .eq('company_id', id)
     .order('created_at', { ascending: false })
 
   return (
@@ -26,7 +28,12 @@ export default async function CompanyPage({
         <h1 className="text-2xl font-semibold">{company?.name}</h1>
       </div>
 
-      <AddNote companyId={params.id} />
+      <div className="flex gap-2">
+        <Link href={`/companies/${id}/quotes`} className="border px-3 py-2 text-sm">Quotes</Link>
+        <Link href={`/companies/${id}/clients`} className="border px-3 py-2 text-sm">Client Access</Link>
+      </div>
+
+      <AddNote companyId={id} />
 
       <div className="space-y-2">
         {notes?.map(n => (

@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HansenOne CRM
 
-## Getting Started
+A modern CRM with:
 
-First, run the development server:
+- **Admin app** for companies, quotes, and invoices.
+- **Client portal** where company clients can sign in, view their invoices, and pay online.
+- **Stripe checkout + webhook** payment flow.
+
+## Required environment variables
+
+Create `.env.local`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_or_publishable_key
+# Backward-compatible fallback still supported:
+# NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=...
+
+# Needed for webhook write operations:
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database setup (Supabase)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Open your Supabase SQL editor.
+2. Copy/paste `schema.txt`.
+3. Run it.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The schema includes:
 
-## Learn More
+- core CRM tables (`companies`, `quotes`, `invoices`, etc.)
+- client auth membership table (`company_users`)
+- Stripe tracking fields and payment ledger (`invoice_payments`)
+- RLS policies for client-portal reads
 
-To learn more about Next.js, take a look at the following resources:
+## Run locally
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stripe local webhook testing
 
-## Deploy on Vercel
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Then copy the webhook secret into `STRIPE_WEBHOOK_SECRET`.
