@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation'
 
 export default function QuoteActions({
   quoteId,
-  companyId
+  companyId,
+  currentStatus
 }: {
   quoteId: string
   companyId: string
+  currentStatus: string
 }) {
   const router = useRouter()
 
@@ -74,7 +76,7 @@ export default function QuoteActions({
         Reject
       </button>
 
-      <button onClick={convert} className="bg-black text-white px-3 py-1">
+      <button onClick={convert} disabled={currentStatus !== 'accepted'} className="bg-black text-white px-3 py-1 disabled:opacity-40 disabled:cursor-not-allowed">
         Convert → Invoice
       </button>
     </div>

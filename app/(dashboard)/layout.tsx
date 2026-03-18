@@ -29,6 +29,12 @@ export default function DashboardLayout({
           <Link href="/portal" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
             Client Portal
           </Link>
+<<<<<<< HEAD
+          <Link href="/settings" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
+            Settings
+          </Link>
+=======
+>>>>>>> origin/main
         </nav>
       </aside>
 

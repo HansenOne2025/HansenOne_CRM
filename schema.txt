@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+-- HansenOne CRM + Invite-based Client Portal + Stripe schema for Supabase
+-- Paste this into Supabase SQL editor.
+=======
 -- HansenOne CRM + Client Portal + Stripe schema for Supabase (PostgreSQL)
 -- Paste this entire script into the Supabase SQL editor.
+>>>>>>> origin/main
 
 create extension if not exists "pgcrypto";
 
@@ -27,6 +32,34 @@ create table if not exists public.companies (
   updated_at timestamptz not null default now()
 );
 
+<<<<<<< HEAD
+create table if not exists public.company_contacts (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  full_name text not null,
+  email text not null,
+  phone text,
+  job_title text,
+  portal_role company_user_role not null default 'billing',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.company_users (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  role company_user_role not null default 'viewer',
+  invited_email text not null,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists uq_company_users_company_invited_email
+  on public.company_users(company_id, invited_email);
+create unique index if not exists uq_company_users_company_user_id
+  on public.company_users(company_id, user_id)
+  where user_id is not null;
+
+=======
 create table if not exists public.company_users (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references public.companies(id) on delete cascade,
@@ -37,6 +70,7 @@ create table if not exists public.company_users (
   unique(company_id, user_id)
 );
 
+>>>>>>> origin/main
 create table if not exists public.notes (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references public.companies(id) on delete cascade,
@@ -98,6 +132,16 @@ create table if not exists public.invoice_payments (
   created_at timestamptz not null default now()
 );
 
+<<<<<<< HEAD
+create table if not exists public.app_settings (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_company_contacts_company_id on public.company_contacts(company_id);
+=======
+>>>>>>> origin/main
 create index if not exists idx_company_users_company_id on public.company_users(company_id);
 create index if not exists idx_company_users_user_id on public.company_users(user_id);
 create index if not exists idx_notes_company_id on public.notes(company_id);
@@ -132,36 +176,103 @@ create trigger trg_invoices_set_updated_at
 before update on public.invoices
 for each row execute procedure public.set_updated_at();
 
+<<<<<<< HEAD
+drop trigger if exists trg_app_settings_set_updated_at on public.app_settings;
+create trigger trg_app_settings_set_updated_at
+before update on public.app_settings
+for each row execute procedure public.set_updated_at();
+
+-- RLS: client portal access on user-linked data
+alter table public.company_users enable row level security;
+alter table public.quotes enable row level security;
+alter table public.quote_items enable row level security;
+=======
 -- Enable Row Level Security for client-facing tables.
 alter table public.company_users enable row level security;
+>>>>>>> origin/main
 alter table public.invoices enable row level security;
 alter table public.invoice_items enable row level security;
 alter table public.invoice_payments enable row level security;
 
+<<<<<<< HEAD
+=======
 -- Company users can view their own membership rows.
+>>>>>>> origin/main
 DROP POLICY IF EXISTS "company_users_select_own" ON public.company_users;
 create policy "company_users_select_own"
 on public.company_users
 for select
 using (auth.uid() = user_id);
 
--- Clients can view invoices for companies they belong to.
-DROP POLICY IF EXISTS "client_can_view_company_invoices" ON public.invoices;
-create policy "client_can_view_company_invoices"
-on public.invoices
+<<<<<<< HEAD
+DROP POLICY IF EXISTS "portal_quotes_select" ON public.quotes;
+create policy "portal_quotes_select"
+on public.quotes
+for select
+using (
+  exists (
+    select 1 from public.company_users cu
+    where cu.company_id = quotes.company_id
+      and cu.user_id = auth.uid()
+  )
+);
+
+DROP POLICY IF EXISTS "portal_quotes_update" ON public.quotes;
+create policy "portal_quotes_update"
+on public.quotes
+for update
+using (
+  exists (
+    select 1 from public.company_users cu
+    where cu.company_id = quotes.company_id
+      and cu.user_id = auth.uid()
+  )
+);
+
+DROP POLICY IF EXISTS "portal_quote_items_select" ON public.quote_items;
+create policy "portal_quote_items_select"
+on public.quote_items
 for select
 using (
   exists (
     select 1
+    from public.quotes q
+    join public.company_users cu on cu.company_id = q.company_id
+    where q.id = quote_items.quote_id
+      and cu.user_id = auth.uid()
+  )
+);
+
+DROP POLICY IF EXISTS "portal_invoices_select" ON public.invoices;
+create policy "portal_invoices_select"
+=======
+-- Clients can view invoices for companies they belong to.
+DROP POLICY IF EXISTS "client_can_view_company_invoices" ON public.invoices;
+create policy "client_can_view_company_invoices"
+>>>>>>> origin/main
+on public.invoices
+for select
+using (
+  exists (
+<<<<<<< HEAD
+    select 1 from public.company_users cu
+=======
+    select 1
     from public.company_users cu
+>>>>>>> origin/main
     where cu.company_id = invoices.company_id
       and cu.user_id = auth.uid()
   )
 );
 
+<<<<<<< HEAD
+DROP POLICY IF EXISTS "portal_invoice_items_select" ON public.invoice_items;
+create policy "portal_invoice_items_select"
+=======
 -- Clients can view invoice line items for invoices they are allowed to see.
 DROP POLICY IF EXISTS "client_can_view_invoice_items" ON public.invoice_items;
 create policy "client_can_view_invoice_items"
+>>>>>>> origin/main
 on public.invoice_items
 for select
 using (
@@ -174,9 +285,14 @@ using (
   )
 );
 
+<<<<<<< HEAD
+DROP POLICY IF EXISTS "portal_invoice_payments_select" ON public.invoice_payments;
+create policy "portal_invoice_payments_select"
+=======
 -- Clients can view payment history for their company's invoices.
 DROP POLICY IF EXISTS "client_can_view_invoice_payments" ON public.invoice_payments;
 create policy "client_can_view_invoice_payments"
+>>>>>>> origin/main
 on public.invoice_payments
 for select
 using (
