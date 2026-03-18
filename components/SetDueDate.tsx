@@ -5,26 +5,19 @@ import type { ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function SetDueDate({
-  invoiceId
+  invoiceId,
+  currentDueDate
 }: {
   invoiceId: string
+  currentDueDate: string | null
 }) {
   const router = useRouter()
 
   const setDate = async (e: ChangeEvent<HTMLInputElement>) => {
-    await supabase
-      .from('invoices')
-      .update({ due_date: e.target.value })
-      .eq('id', invoiceId)
+    await supabase.from('invoices').update({ due_date: e.target.value }).eq('id', invoiceId)
 
     router.refresh()
   }
 
-  return (
-    <input
-      type="date"
-      className="border p-1"
-      onChange={setDate}
-    />
-  )
+  return <input type="date" className="rounded border p-1" defaultValue={currentDueDate ?? ''} onChange={setDate} />
 }

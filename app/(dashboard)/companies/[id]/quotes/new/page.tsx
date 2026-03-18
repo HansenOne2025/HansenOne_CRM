@@ -4,6 +4,12 @@ import { supabase } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
 import { useState } from 'react'
 
+function generateQuoteNumber() {
+  const timestampPart = Date.now().toString().slice(-7)
+  const randomPart = Math.floor(100 + Math.random() * 900).toString()
+  return `${timestampPart}${randomPart}`
+}
+
 export default function NewQuote() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
@@ -13,11 +19,15 @@ export default function NewQuote() {
     if (creating) return
     setCreating(true)
 
+    const quoteNumber = generateQuoteNumber()
+
     const { data } = await supabase
       .from('quotes')
       .insert({
         company_id: params.id,
-        status: 'draft'
+        status: 'draft',
+        quote_number: quoteNumber,
+        currency: 'USD'
       })
       .select()
       .single()
@@ -26,7 +36,7 @@ export default function NewQuote() {
   }
 
   return (
-    <div className="p-6 bg-slate-50 min-h-full">
+    <div className="min-h-full bg-slate-50 p-6">
       <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Create quote</h1>
         <p className="mt-1 text-sm text-slate-600">

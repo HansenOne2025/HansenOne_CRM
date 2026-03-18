@@ -12,6 +12,7 @@ export default function QuoteReviewActions({
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [responseState, setResponseState] = useState<'accepted' | 'rejected' | null>(null)
 
   const updateStatus = async (nextStatus: 'accepted' | 'rejected') => {
     setLoading(true)
@@ -27,11 +28,16 @@ export default function QuoteReviewActions({
       return
     }
 
+    setResponseState(nextStatus)
     router.refresh()
   }
 
-  if (status === 'accepted' || status === 'rejected') {
-    return <div className="text-sm text-slate-500">Already responded.</div>
+  if (responseState === 'accepted' || status === 'accepted') {
+    return <div className="text-sm font-medium text-emerald-700">Thank you for accepting this quote.</div>
+  }
+
+  if (responseState === 'rejected' || status === 'rejected') {
+    return <div className="text-sm font-medium text-rose-700">You declined this quote.</div>
   }
 
   return (
@@ -39,16 +45,16 @@ export default function QuoteReviewActions({
       <button
         disabled={loading}
         onClick={() => updateStatus('accepted')}
-        className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white"
+        className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white transition active:scale-[0.98] disabled:opacity-60"
       >
-        Accept
+        {loading ? 'Submitting…' : 'Accept Quote'}
       </button>
       <button
         disabled={loading}
         onClick={() => updateStatus('rejected')}
-        className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm text-white"
+        className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm text-white transition active:scale-[0.98] disabled:opacity-60"
       >
-        Reject
+        {loading ? 'Submitting…' : 'Reject Quote'}
       </button>
     </div>
   )
