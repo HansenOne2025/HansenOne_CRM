@@ -7,3 +7,4 @@ export default async function Page() {
 
   return <pre>{JSON.stringify(res, null, 2)}</pre>
 }
+console.log('SECRET:', process.env.SUPABASE_SECRET_KEY)
