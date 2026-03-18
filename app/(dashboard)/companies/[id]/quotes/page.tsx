@@ -16,7 +16,7 @@ export default async function QuotesPage({
     .order('created_at', { ascending: false })
 
   return (
-    <div className="p-6 space-y-4 bg-slate-50 min-h-full">
+    <div className="min-h-full space-y-4 bg-slate-50 p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Quotes</h1>
@@ -37,11 +37,12 @@ export default async function QuotesPage({
             href={`/companies/${id}/quotes/${q.id}`}
             className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
           >
-            <div className="font-mono text-xs text-slate-500">{q.id}</div>
+            <div className="font-mono text-xs text-slate-500">Quote #{q.quote_number || 'Pending Number'}</div>
             <div className="mt-2 inline-flex rounded-full border border-slate-300 px-2.5 py-1 text-xs font-semibold uppercase text-slate-700">
               {q.status}
             </div>
-            <div className="mt-2 text-xs text-slate-500">Created {new Date(q.created_at).toLocaleString()}</div>
+            <div className="mt-2 text-xs text-slate-500">Currency: {(q.currency || 'USD').toUpperCase()}</div>
+            <div className="mt-1 text-xs text-slate-500">Created {new Date(q.created_at).toLocaleString()}</div>
           </Link>
         ))}
       </div>

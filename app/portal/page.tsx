@@ -30,7 +30,7 @@ export default async function PortalHomePage() {
 
   const { data: invoices } = await supabase
     .from('invoices')
-    .select('id,total,status,due_date,created_at,company_id')
+    .select('id,total,status,due_date,created_at,company_id,currency')
     .in('company_id', companyIds)
     .order('created_at', { ascending: false })
 

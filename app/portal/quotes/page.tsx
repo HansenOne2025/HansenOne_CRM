@@ -7,7 +7,6 @@ export default async function PortalQuotesPage() {
     data: { user }
   } = await supabase.auth.getUser()
 
-
   if (user?.email) {
     await supabase
       .from('company_users')
@@ -25,7 +24,7 @@ export default async function PortalQuotesPage() {
 
   const { data: quotes } = await supabase
     .from('quotes')
-    .select('id,status,created_at,company_id')
+    .select('id,status,created_at,company_id,quote_number,currency')
     .in('company_id', companyIds)
     .order('created_at', { ascending: false })
 
@@ -36,12 +35,13 @@ export default async function PortalQuotesPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {quotes?.map(quote => (
-          <div key={quote.id} className="rounded-2xl border bg-white p-5 shadow-sm space-y-3">
-            <div className="font-mono text-xs text-slate-500">{quote.id}</div>
-            <div className="text-sm">Status: <strong>{quote.status}</strong></div>
-            <div className="text-sm text-slate-500">
-              Created: {new Date(quote.created_at).toLocaleDateString()}
+          <div key={quote.id} className="space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="font-mono text-xs text-slate-500">Quote #{quote.quote_number || 'Pending Number'}</div>
+            <div className="text-sm">
+              Status: <strong>{quote.status}</strong>
             </div>
+            <div className="text-xs text-slate-500">Currency: {(quote.currency || 'USD').toUpperCase()}</div>
+            <div className="text-sm text-slate-500">Created: {new Date(quote.created_at).toLocaleDateString()}</div>
             <QuoteReviewActions quoteId={quote.id} status={quote.status} />
           </div>
         ))}

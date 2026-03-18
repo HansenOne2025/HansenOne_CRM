@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
     const { data: invoice } = await supabase
       .from('invoices')
-      .select('id,total,status,company_id')
+      .select('id,total,status,company_id,currency')
       .eq('id', invoiceId)
       .eq('company_id', membership.company_id)
       .single()
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         {
           quantity: 1,
           price_data: {
-            currency: 'usd',
+            currency: (invoice.currency || 'usd').toLowerCase(),
             product_data: {
               name: `Invoice ${invoice.id}`
             },

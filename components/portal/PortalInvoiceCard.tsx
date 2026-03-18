@@ -10,12 +10,13 @@ type PortalInvoice = {
   status: 'draft' | 'sent' | 'paid'
   due_date: string | null
   created_at: string
+  currency: string | null
 }
 
-function formatCurrency(amount: number) {
+function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD'
+    currency: (currency || 'USD').toUpperCase()
   }).format(amount)
 }
 
@@ -75,7 +76,7 @@ export default function PortalInvoiceCard({
       </div>
 
       <div className="mb-5 text-3xl font-semibold tracking-tight text-slate-900">
-        {formatCurrency(Number(invoice.total))}
+        {formatCurrency(Number(invoice.total), invoice.currency || 'USD')}
       </div>
 
       <div className="mb-5 text-sm text-slate-600">
