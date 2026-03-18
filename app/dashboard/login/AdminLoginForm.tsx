@@ -29,15 +29,8 @@ export default function AdminLoginForm({ initialError, nextPath }: AdminLoginFor
 
       if (signInError) throw signInError
 
-      const userId = data.user?.id
-      const allowList = (process.env.NEXT_PUBLIC_ADMIN_USER_UUIDS ?? '')
-        .split(',')
-        .map(id => id.trim())
-        .filter(Boolean)
-
-      if (!userId || !allowList.includes(userId)) {
-        await supabase.auth.signOut()
-        throw new Error('Your account is not an authorized admin.')
+      if (!data.user?.id) {
+        throw new Error('Authentication failed.')
       }
 
       router.push(nextPath)
