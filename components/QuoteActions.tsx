@@ -39,7 +39,7 @@ export default function QuoteActions({
     [selectedCurrency]
   )
 
-  const updateStatus = async (status: QuoteStatus) => {
+  const updateStatus = async (status: Exclude<QuoteStatus, 'draft'>) => {
     setActiveAction(status)
 
     await supabase.from('quotes').update({ status }).eq('id', quoteId)
