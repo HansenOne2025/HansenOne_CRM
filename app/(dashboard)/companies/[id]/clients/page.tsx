@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/admin'
 import InviteMemberForm from '@/components/admin/InviteMemberForm'
 
 export default async function CompanyMembersPage({
@@ -7,7 +7,18 @@ export default async function CompanyMembersPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createServerSupabase()
+  const supabase = createAdminSupabase()
+
+  console.info('[supabase-debug] company clients query', {
+    route: '/companies/[id]/clients',
+    clientFactory: 'createAdminSupabase',
+    keySource: process.env.SUPABASE_SECRET_KEY
+      ? 'SUPABASE_SECRET_KEY'
+      : process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? 'SUPABASE_SERVICE_ROLE_KEY'
+        : 'missing',
+    effectiveRole: 'service_role'
+  })
 
   const { data: contacts } = await supabase
     .from('company_contacts')
