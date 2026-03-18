@@ -21,6 +21,20 @@ export default async function CompanyMembersPage({
     .eq('company_id', id)
     .order('created_at', { ascending: false })
 
+  const existingMembers =
+    members
+      ?.map(member => {
+        const email = member.invited_email?.trim().toLowerCase()
+        if (!email) return null
+
+        return {
+          email,
+          role: member.role,
+          status: member.user_id ? ('accepted' as const) : ('pending' as const)
+        }
+      })
+      .filter((member): member is { email: string; role: 'owner' | 'billing' | 'viewer'; status: 'accepted' | 'pending' } => member !== null) ?? []
+
   return (
     <div className="p-6 space-y-5">
       <div>
@@ -30,7 +44,7 @@ export default async function CompanyMembersPage({
         </p>
       </div>
 
-      <InviteMemberForm companyId={id} />
+      <InviteMemberForm companyId={id} existingMembers={existingMembers} />
 
       <div className="rounded-2xl border bg-white">
         <div className="border-b px-4 py-3 font-medium">Contacts</div>
