@@ -11,29 +11,62 @@ export default function AddQuoteItem({ quoteId }: { quoteId: string }) {
   const [qty, setQty] = useState(1)
   const [price, setPrice] = useState(0)
   const [tax, setTax] = useState(0)
+  const [saving, setSaving] = useState(false)
 
   const add = async () => {
+    if (!name.trim() || qty <= 0 || saving) return
+
+    setSaving(true)
     await supabase.from('quote_items').insert({
       quote_id: quoteId,
-      name,
+      name: name.trim(),
       qty,
       unit_price: price,
       tax_rate: tax
     })
 
+    setName('')
+    setQty(1)
+    setPrice(0)
+    setTax(0)
+    setSaving(false)
     router.refresh()
   }
 
   return (
-    <div className="grid grid-cols-5 gap-2">
-      <input className="border p-2" placeholder="Name" onChange={e => setName(e.target.value)} />
-      <input className="border p-2" type="number" placeholder="Qty" onChange={e => setQty(Number(e.target.value))} />
-      <input className="border p-2" type="number" placeholder="Price" onChange={e => setPrice(Number(e.target.value))} />
-      <input className="border p-2" type="number" placeholder="Tax %" onChange={e => setTax(Number(e.target.value))} />
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-slate-900">Add line item</h2>
+        <p className="text-xs text-slate-500">Use clear names so clients understand what they are approving.</p>
+      </div>
 
-      <button onClick={add} className="bg-black text-white">
-        Add
-      </button>
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="md:col-span-5">
+          <label className="text-xs font-medium text-slate-600">Item</label>
+          <input className="mt-1 w-full rounded-xl border border-slate-200 p-2 text-sm" placeholder="Site inspection" value={name} onChange={e => setName(e.target.value)} />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="text-xs font-medium text-slate-600">Qty</label>
+          <input className="mt-1 w-full rounded-xl border border-slate-200 p-2 text-sm" type="number" min={1} value={qty} onChange={e => setQty(Number(e.target.value))} />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="text-xs font-medium text-slate-600">Unit price</label>
+          <input className="mt-1 w-full rounded-xl border border-slate-200 p-2 text-sm" type="number" min={0} step="0.01" value={price} onChange={e => setPrice(Number(e.target.value))} />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="text-xs font-medium text-slate-600">Tax %</label>
+          <input className="mt-1 w-full rounded-xl border border-slate-200 p-2 text-sm" type="number" min={0} step="0.01" value={tax} onChange={e => setTax(Number(e.target.value))} />
+        </div>
+
+        <div className="md:col-span-1 md:flex md:items-end">
+          <button onClick={add} disabled={saving || !name.trim() || qty <= 0} className="w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40">
+            {saving ? '...' : 'Add'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

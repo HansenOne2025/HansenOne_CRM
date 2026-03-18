@@ -63,21 +63,21 @@ export default function QuoteActions({
   }
 
   return (
-    <div className="flex gap-2">
-      <button onClick={() => updateStatus('sent')} className="border px-3 py-1">
-        Sent
+    <div className="flex flex-wrap gap-2">
+      <button onClick={() => updateStatus('sent')} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700">
+        Mark sent
       </button>
 
-      <button onClick={() => updateStatus('accepted')} className="border px-3 py-1">
-        Accept
+      <button onClick={() => updateStatus('accepted')} className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
+        Mark accepted
       </button>
 
-      <button onClick={() => updateStatus('rejected')} className="border px-3 py-1">
-        Reject
+      <button onClick={() => updateStatus('rejected')} className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-700">
+        Mark rejected
       </button>
 
-      <button onClick={convert} disabled={currentStatus !== 'accepted'} className="bg-black text-white px-3 py-1 disabled:opacity-40 disabled:cursor-not-allowed">
-        Convert → Invoice
+      <button onClick={convert} disabled={currentStatus !== 'accepted'} className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40">
+        Convert to invoice
       </button>
     </div>
   )
