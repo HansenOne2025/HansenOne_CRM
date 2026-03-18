@@ -3,14 +3,14 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const parseList = (value: string | undefined) =>
   (value ?? '')
     .split(',')
-    .map(id => id.trim().toLowerCase())
+    .map(id => id.trim())
     .filter(Boolean)
 
 export const adminUserIds = parseList(process.env.ADMIN_USER_UUIDS)
 
 export const isAdminUser = (userId: string | undefined | null) => {
   if (!userId) return false
-  return adminUserIds.includes(userId.trim().toLowerCase())
+  return adminUserIds.includes(userId)
 }
 
 export const hasValidAdminConfig = () => {

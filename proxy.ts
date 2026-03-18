@@ -70,8 +70,7 @@ export async function proxy(request: NextRequest) {
       url.pathname = '/dashboard/login'
       url.searchParams.set('next', pathname)
       if (user && !allowed) {
-        url.searchParams.set('error', 'Signed in successfully, but this user UUID is not listed in ADMIN_USER_UUIDS.')
-        url.searchParams.set('user_id', user.id)
+        url.searchParams.set('error', 'Your account is not an authorized admin.')
       }
       return NextResponse.redirect(url)
     }

@@ -6,11 +6,10 @@ import { useRouter } from 'next/navigation'
 
 type AdminLoginFormProps = {
   initialError: string | null
-  initialUserId: string | null
   nextPath: string
 }
 
-export default function AdminLoginForm({ initialError, initialUserId, nextPath }: AdminLoginFormProps) {
+export default function AdminLoginForm({ initialError, nextPath }: AdminLoginFormProps) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,8 +29,15 @@ export default function AdminLoginForm({ initialError, initialUserId, nextPath }
 
       if (signInError) throw signInError
 
-      if (!data.user) {
-        throw new Error('No user returned from Supabase authentication.')
+      const userId = data.user?.id
+      const allowList = (process.env.NEXT_PUBLIC_ADMIN_USER_UUIDS ?? '')
+        .split(',')
+        .map(id => id.trim())
+        .filter(Boolean)
+
+      if (!userId || !allowList.includes(userId)) {
+        await supabase.auth.signOut()
+        throw new Error('Your account is not an authorized admin.')
       }
 
       router.push(nextPath)
@@ -49,7 +55,7 @@ export default function AdminLoginForm({ initialError, initialUserId, nextPath }
         <p className="mb-2 text-sm uppercase tracking-widest text-slate-300">HansenOne</p>
         <h1 className="mb-2 text-2xl font-semibold">Admin Login</h1>
         <p className="mb-6 text-sm text-slate-300">
-          Sign in with the email and password for your Supabase Auth user. Admin access is granted only when that user&apos;s UUID exists in <code>ADMIN_USER_UUIDS</code>.
+          Sign in with an admin account UUID listed in ADMIN_USER_UUIDS.
         </p>
 
         <form onSubmit={submit} className="space-y-4">
@@ -72,12 +78,6 @@ export default function AdminLoginForm({ initialError, initialUserId, nextPath }
           />
 
           {error && <p className="text-sm text-rose-300">{error}</p>}
-
-          {initialUserId && (
-            <p className="text-xs text-amber-300">
-              Signed-in user UUID: <span className="font-mono">{initialUserId}</span>
-            </p>
-          )}
 
           <button
             type="submit"

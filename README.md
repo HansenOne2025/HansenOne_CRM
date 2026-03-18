@@ -35,6 +35,8 @@ SUPABASE_SECRET_KEY=your_secret_key
 
 # Admin UUID allowlist (Supabase auth.users.id):
 ADMIN_USER_UUIDS=uuid1,uuid2
+# Optional client-side mirror used to fail fast on /dashboard/login:
+NEXT_PUBLIC_ADMIN_USER_UUIDS=uuid1,uuid2
 
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
