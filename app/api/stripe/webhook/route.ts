@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
 import { getStripe } from '@/lib/stripe/server'
+import { createAdminSupabase } from '@/lib/supabase/admin'
 
 export async function POST(req: Request) {
   const signature = req.headers.get('stripe-signature')
@@ -27,14 +27,13 @@ export async function POST(req: Request) {
     const invoiceId = session.metadata?.invoiceId
 
     if (invoiceId) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-      if (!supabaseUrl || !serviceRoleKey) {
-        return NextResponse.json({ error: 'Missing Supabase service role config' }, { status: 500 })
+      let supabaseAdmin
+      try {
+        supabaseAdmin = createAdminSupabase()
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Missing Supabase admin configuration'
+        return NextResponse.json({ error: message }, { status: 500 })
       }
-
-      const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
 
       await supabaseAdmin
         .from('invoices')

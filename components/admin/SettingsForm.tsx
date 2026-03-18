@@ -38,53 +38,82 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
   }
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-2xl border bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold text-slate-900">System settings</h2>
+    <form onSubmit={save} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold text-slate-900">Configuration</h2>
+        <p className="text-sm text-slate-500">Manage core credentials and communication defaults.</p>
+      </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <input
-          placeholder="Stripe publishable key"
-          value={form.stripePublishableKey}
-          onChange={e => setForm(prev => ({ ...prev, stripePublishableKey: e.target.value }))}
-          className="rounded-xl border px-3 py-2"
-        />
-        <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">Stripe publishable key</span>
+          <input
+            placeholder="pk_live_..."
+            value={form.stripePublishableKey}
+            onChange={e => setForm(prev => ({ ...prev, stripePublishableKey: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="mt-7 inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 md:mt-0">
           <input
             type="checkbox"
             checked={form.stripeWebhookEnabled}
             onChange={e => setForm(prev => ({ ...prev, stripeWebhookEnabled: e.target.checked }))}
+            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
           />
           Stripe webhook enabled
         </label>
-        <input
-          placeholder="SMTP host"
-          value={form.smtpHost}
-          onChange={e => setForm(prev => ({ ...prev, smtpHost: e.target.value }))}
-          className="rounded-xl border px-3 py-2"
-        />
-        <input
-          placeholder="SMTP port"
-          value={form.smtpPort}
-          onChange={e => setForm(prev => ({ ...prev, smtpPort: e.target.value }))}
-          className="rounded-xl border px-3 py-2"
-        />
-        <input
-          placeholder="SMTP from email"
-          value={form.smtpFromEmail}
-          onChange={e => setForm(prev => ({ ...prev, smtpFromEmail: e.target.value }))}
-          className="rounded-xl border px-3 py-2"
-        />
-        <input
-          placeholder="Quote email subject"
-          value={form.quoteEmailSubject}
-          onChange={e => setForm(prev => ({ ...prev, quoteEmailSubject: e.target.value }))}
-          className="rounded-xl border px-3 py-2"
-        />
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">SMTP host</span>
+          <input
+            placeholder="smtp.resend.com"
+            value={form.smtpHost}
+            onChange={e => setForm(prev => ({ ...prev, smtpHost: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">SMTP port</span>
+          <input
+            placeholder="587"
+            value={form.smtpPort}
+            onChange={e => setForm(prev => ({ ...prev, smtpPort: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">SMTP from email</span>
+          <input
+            placeholder="billing@company.com"
+            value={form.smtpFromEmail}
+            onChange={e => setForm(prev => ({ ...prev, smtpFromEmail: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">Quote email subject</span>
+          <input
+            placeholder="Your quote is ready"
+            value={form.quoteEmailSubject}
+            onChange={e => setForm(prev => ({ ...prev, quoteEmailSubject: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
       </div>
 
-      {message && <p className="text-sm text-slate-600">{message}</p>}
+      {message && (
+        <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">{message}</p>
+      )}
 
-      <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" disabled={saving}>
+      <button
+        className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={saving}
+      >
         {saving ? 'Saving…' : 'Save settings'}
       </button>
     </form>

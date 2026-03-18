@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminSupabase } from '@/lib/supabase/admin'
 
 export async function PUT(req: Request) {
   const payload = (await req.json()) as Record<string, string | boolean>
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!url || !serviceRoleKey) {
-    return NextResponse.json({ error: 'Missing Supabase service role env vars' }, { status: 500 })
+  let admin
+  try {
+    admin = createAdminSupabase()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Missing Supabase admin configuration'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const admin = createClient(url, serviceRoleKey)
 
   const rows = [
     { key: 'stripe_publishable_key', value: payload.stripePublishableKey ?? '' },
