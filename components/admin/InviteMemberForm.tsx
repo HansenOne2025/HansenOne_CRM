@@ -53,54 +53,77 @@ export default function InviteMemberForm({ companyId }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-2xl border bg-white p-5 shadow-sm space-y-3">
-      <h3 className="text-lg font-semibold text-slate-900">Add / Invite company member</h3>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        <input
-          required
-          value={fullName}
-          onChange={e => setFullName(e.target.value)}
-          placeholder="Full name"
-          className="rounded-xl border px-3 py-2"
-        />
-        <input
-          required
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="Email"
-          className="rounded-xl border px-3 py-2"
-        />
-        <input
-          value={jobTitle}
-          onChange={e => setJobTitle(e.target.value)}
-          placeholder="Job title"
-          className="rounded-xl border px-3 py-2"
-        />
-        <input
-          value={phone}
-          onChange={e => setPhone(e.target.value)}
-          placeholder="Phone"
-          className="rounded-xl border px-3 py-2"
-        />
+    <form onSubmit={submit} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="space-y-1">
+        <h3 className="text-lg font-semibold text-slate-900">Invite company member</h3>
+        <p className="text-sm text-slate-500">Create a contact and send a portal invite in one step.</p>
       </div>
 
-      <select
-        value={role}
-        onChange={e => setRole(e.target.value)}
-        className="rounded-xl border px-3 py-2"
-      >
-        <option value="owner">Owner</option>
-        <option value="billing">Billing</option>
-        <option value="viewer">Viewer</option>
-      </select>
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">Full name</span>
+          <input
+            required
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            placeholder="Jane Doe"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900"
+          />
+        </label>
 
-      {message && <p className="text-sm text-slate-600">{message}</p>}
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">Email</span>
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="jane@company.com"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">Job title</span>
+          <input
+            value={jobTitle}
+            onChange={e => setJobTitle(e.target.value)}
+            placeholder="Finance Manager"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">Phone</span>
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            placeholder="+1 555 123 4567"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900"
+          />
+        </label>
+      </div>
+
+      <label className="block max-w-sm space-y-2">
+        <span className="text-sm font-medium text-slate-700">Portal role</span>
+        <select
+          value={role}
+          onChange={e => setRole(e.target.value)}
+          className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900"
+        >
+          <option value="owner">Owner</option>
+          <option value="billing">Billing</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </label>
+
+      {message && (
+        <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">{message}</p>
+      )}
 
       <button
         disabled={loading}
-        className="rounded-xl bg-slate-900 px-4 py-2 text-white hover:bg-slate-700 disabled:opacity-60"
+        className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? 'Sending…' : 'Save member + send invite'}
       </button>

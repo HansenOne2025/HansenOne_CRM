@@ -23,12 +23,15 @@ Create `.env.local`:
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 NEXT_PUBLIC_SUPABASE_URL=your_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_or_publishable_key
-# Backward-compatible fallback still supported:
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+# Backward-compatible fallbacks still supported:
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 # NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=...
 
 # Needed for admin invite + webhook writes:
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_SECRET_KEY=your_secret_key
+# Backward-compatible fallback still supported:
+# SUPABASE_SERVICE_ROLE_KEY=...
 
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
