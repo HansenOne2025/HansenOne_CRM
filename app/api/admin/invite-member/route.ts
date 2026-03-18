@@ -18,6 +18,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
+  const normalizedEmail = email.trim().toLowerCase()
+  if (!normalizedEmail) {
+    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+  }
+
   let admin
   try {
     admin = createAdminSupabase()
@@ -26,26 +31,52 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 
-  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email)
+  const { data: existingMember } = await admin
+    .from('company_users')
+    .select('id')
+    .eq('company_id', companyId)
+    .ilike('invited_email', normalizedEmail)
+    .maybeSingle()
+
+  if (existingMember) {
+    return NextResponse.json({ error: 'This email is already invited for this company.' }, { status: 409 })
+  }
+
+  const origin = new URL(req.url).origin
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim() || origin
+
+  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(normalizedEmail, {
+    redirectTo: `${siteUrl}/invite/accept`
+  })
+
   if (inviteError) {
     return NextResponse.json({ error: inviteError.message }, { status: 500 })
   }
 
   const userId = inviteData.user?.id ?? null
 
-  const { error: contactError } = await admin
+  const { data: existingContact } = await admin
     .from('company_contacts')
-    .insert({
-      company_id: companyId,
-      full_name: fullName,
-      email,
-      job_title: jobTitle ?? null,
-      phone: phone ?? null,
-      portal_role: role
-    })
+    .select('id')
+    .eq('company_id', companyId)
+    .ilike('email', normalizedEmail)
+    .maybeSingle()
 
-  if (contactError) {
-    return NextResponse.json({ error: contactError.message }, { status: 500 })
+  if (!existingContact) {
+    const { error: contactError } = await admin
+      .from('company_contacts')
+      .insert({
+        company_id: companyId,
+        full_name: fullName,
+        email: normalizedEmail,
+        job_title: jobTitle ?? null,
+        phone: phone ?? null,
+        portal_role: role
+      })
+
+    if (contactError) {
+      return NextResponse.json({ error: contactError.message }, { status: 500 })
+    }
   }
 
   const { error: memberError } = await admin
@@ -54,7 +85,7 @@ export async function POST(req: Request) {
       {
         company_id: companyId,
         user_id: userId,
-        invited_email: email,
+        invited_email: normalizedEmail,
         role
       },
       { onConflict: 'company_id,invited_email' }
