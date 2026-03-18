@@ -5,20 +5,21 @@ import QuoteActions from '@/components/QuoteActions'
 export default async function QuotePage({
   params
 }: {
-  params: { id: string; quoteId: string }
+  params: Promise<{ id: string; quoteId: string }>
 }) {
+  const { id, quoteId } = await params
   const supabase = await createServerSupabase()
 
   const { data: quote } = await supabase
     .from('quotes')
     .select('*')
-    .eq('id', params.quoteId)
+    .eq('id', quoteId)
     .single()
 
   const { data: items } = await supabase
     .from('quote_items')
     .select('*')
-    .eq('quote_id', params.quoteId)
+    .eq('quote_id', quoteId)
 
   const total =
     items?.reduce((sum, i) => {
@@ -31,10 +32,10 @@ export default async function QuotePage({
     <div className="p-6 space-y-4">
       <div className="flex justify-between">
         <div>Status: {quote.status}</div>
-        <QuoteActions quoteId={params.quoteId} companyId={params.id} />
+        <QuoteActions quoteId={quoteId} companyId={id} currentStatus={quote.status} />
       </div>
 
-      <AddItem quoteId={params.quoteId} />
+      <AddItem quoteId={quoteId} />
 
       <div className="space-y-2">
         {items?.map(i => (
