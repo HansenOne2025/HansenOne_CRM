@@ -16,19 +16,17 @@ export default async function PortalLayout({
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-<<<<<<< HEAD
           <div className="flex items-center gap-5">
             <Link href="/portal" className="text-lg font-semibold text-slate-900">
               HansenOne Client Portal
             </Link>
-            <Link href="/portal" className="text-sm text-slate-600 hover:text-slate-900">Invoices</Link>
-            <Link href="/portal/quotes" className="text-sm text-slate-600 hover:text-slate-900">Quotes</Link>
+            <Link href="/portal" className="text-sm text-slate-600 hover:text-slate-900">
+              Invoices
+            </Link>
+            <Link href="/portal/quotes" className="text-sm text-slate-600 hover:text-slate-900">
+              Quotes
+            </Link>
           </div>
-=======
-          <Link href="/portal" className="text-lg font-semibold text-slate-900">
-            HansenOne Client Portal
-          </Link>
->>>>>>> origin/main
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">{user?.email}</div>
             <PortalLogoutButton />

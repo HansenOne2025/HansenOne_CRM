@@ -8,8 +8,6 @@ export default async function PortalHomePage() {
     data: { user }
   } = await supabase.auth.getUser()
 
-<<<<<<< HEAD
-
   if (user?.email) {
     await supabase
       .from('company_users')
@@ -18,8 +16,6 @@ export default async function PortalHomePage() {
       .is('user_id', null)
   }
 
-=======
->>>>>>> origin/main
   const { data: membershipsData } = await supabase
     .from('company_users')
     .select('company_id, role, companies(name)')
