@@ -50,7 +50,7 @@ export default function InvoiceActions({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         status: 'paid',
-        paid_at: new Date().toISOString()
+        paidAt: new Date().toISOString()
       })
     })
     if (!response.ok) {
