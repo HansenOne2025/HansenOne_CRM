@@ -6,7 +6,6 @@ import { createServerSupabase } from '@/lib/supabase/server'
 type ConvertPayload = {
   company_id?: string
   due_date?: string
-  currency?: string
 }
 
 export async function POST(
@@ -26,7 +25,6 @@ export async function POST(
   const payload = (await req.json()) as ConvertPayload
   const companyId = payload.company_id?.trim()
   const dueDate = payload.due_date?.trim()
-  const fallbackCurrency = (payload.currency?.trim() || 'USD').toUpperCase()
 
   if (!companyId || !dueDate) {
     return NextResponse.json({ error: 'company_id and due_date are required' }, { status: 400 })
@@ -38,16 +36,6 @@ export async function POST(
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Missing Supabase admin configuration'
     return NextResponse.json({ error: message }, { status: 500 })
-  }
-
-  const { data: quote, error: quoteError } = await admin
-    .from('quotes')
-    .select('currency')
-    .eq('id', quoteId)
-    .single()
-
-  if (quoteError) {
-    return NextResponse.json({ error: quoteError.message }, { status: 500 })
   }
 
   const { data: items, error: itemError } = await admin
@@ -75,8 +63,7 @@ export async function POST(
       company_id: companyId,
       total,
       status: 'draft',
-      due_date: dueDate,
-      currency: (quote?.currency || fallbackCurrency).toUpperCase()
+      due_date: dueDate
     })
     .select('id')
     .single()
