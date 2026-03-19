@@ -1,6 +1,5 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
@@ -105,59 +104,28 @@ export default function QuoteActions({
     if (!dueDate) return
 
     setActiveAction('convert')
+    setActionError(null)
 
-    const { data: quote } = await supabase
-      .from('quotes')
-      .select('currency')
-      .eq('id', quoteId)
-      .single()
-
-    const { data: items, error } = await supabase
-      .from('quote_items')
-      .select('*')
-      .eq('quote_id', quoteId)
-
-    if (error || !items || items.length === 0) {
-      setActiveAction(null)
-      return
-    }
-
-    const total = items.reduce((sum, i) => {
-      const line = i.qty * i.unit_price
-      const tax = line * (i.tax_rate / 100)
-      return sum + line + tax
-    }, 0)
-
-    const { data: invoice, error: invoiceError } = await supabase
-      .from('invoices')
-      .insert({
-        company_id: companyId,
-        total,
-        status: 'draft',
-        due_date: dueDate,
-        currency: (quote?.currency || selectedCurrency || 'USD').toUpperCase()
+    const response = await fetch(`/api/admin/quotes/${quoteId}/convert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyId,
+        dueDate,
+        currency: selectedCurrency
       })
-      .select()
-      .single()
+    })
+    const payload = (await response.json()) as { invoiceId?: string; error?: string }
 
-    if (invoiceError || !invoice) {
+    if (!response.ok || !payload.invoiceId) {
+      setActionError(payload.error ?? 'Unable to convert quote.')
       setActiveAction(null)
       return
     }
-
-    await supabase.from('invoice_items').insert(
-      items.map(i => ({
-        invoice_id: invoice.id,
-        name: i.name,
-        qty: i.qty,
-        unit_price: i.unit_price,
-        tax_rate: i.tax_rate
-      }))
-    )
 
     setActiveAction(null)
     setShowDueDateModal(false)
-    router.push(`/companies/${companyId}/invoices/${invoice.id}`)
+    router.push(`/companies/${companyId}/invoices/${payload.invoiceId}`)
   }
 
   return (

@@ -1,6 +1,5 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -20,23 +19,46 @@ export default function InvoiceActions({
   const router = useRouter()
   const [activeAction, setActiveAction] = useState<ActionState>(null)
   const [currency, setCurrency] = useState((currentCurrency || 'USD').toUpperCase())
+  const [error, setError] = useState<string | null>(null)
 
   const updateStatus = async (status: string) => {
     setActiveAction('sent')
-    await supabase.from('invoices').update({ status }).eq('id', invoiceId)
+    setError(null)
+
+    const response = await fetch(`/api/admin/invoices/${invoiceId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    })
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setError(payload.error ?? 'Unable to update invoice status.')
+      setActiveAction(null)
+      return
+    }
+
     setActiveAction(null)
     router.refresh()
   }
 
   const markPaid = async () => {
     setActiveAction('paid')
-    await supabase
-      .from('invoices')
-      .update({
+    setError(null)
+
+    const response = await fetch(`/api/admin/invoices/${invoiceId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         status: 'paid',
-        paid_at: new Date().toISOString()
+        paidAt: new Date().toISOString()
       })
-      .eq('id', invoiceId)
+    })
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setError(payload.error ?? 'Unable to mark invoice as paid.')
+      setActiveAction(null)
+      return
+    }
 
     setActiveAction(null)
     router.refresh()
@@ -44,14 +66,37 @@ export default function InvoiceActions({
 
   const deleteInvoice = async () => {
     setActiveAction('delete')
-    await supabase.from('invoices').delete().eq('id', invoiceId)
+    setError(null)
+
+    const response = await fetch(`/api/admin/invoices/${invoiceId}`, {
+      method: 'DELETE'
+    })
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setError(payload.error ?? 'Unable to delete invoice.')
+      setActiveAction(null)
+      return
+    }
+
     setActiveAction(null)
     router.push(`/companies/${companyId}`)
   }
 
   const updateCurrency = async (nextCurrency: string) => {
     setCurrency(nextCurrency)
-    await supabase.from('invoices').update({ currency: nextCurrency }).eq('id', invoiceId)
+    setError(null)
+
+    const response = await fetch(`/api/admin/invoices/${invoiceId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currency: nextCurrency })
+    })
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setError(payload.error ?? 'Unable to update invoice currency.')
+      return
+    }
+
     router.refresh()
   }
 
@@ -98,6 +143,7 @@ export default function InvoiceActions({
           {activeAction === 'delete' ? 'Deleting…' : 'Delete Invoice'}
         </button>
       </div>
+      {error && <p className="text-xs text-rose-600">{error}</p>}
     </div>
   )
 }

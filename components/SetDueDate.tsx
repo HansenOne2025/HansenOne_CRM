@@ -1,6 +1,5 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
 import type { ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -14,7 +13,11 @@ export default function SetDueDate({
   const router = useRouter()
 
   const setDate = async (e: ChangeEvent<HTMLInputElement>) => {
-    await supabase.from('invoices').update({ due_date: e.target.value }).eq('id', invoiceId)
+    await fetch(`/api/admin/invoices/${invoiceId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dueDate: e.target.value })
+    })
 
     router.refresh()
   }
