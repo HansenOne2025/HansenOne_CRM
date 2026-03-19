@@ -30,10 +30,10 @@ export async function PATCH(
   const payload = (await req.json()) as UpdateInvoicePayload
 
   const updates: Record<string, string | null> = {}
-  if (payload.status) updates.status = payload.status
+  if (payload.status) updates.status = payload.status.trim()
   if (payload.currency) updates.currency = payload.currency.trim().toUpperCase()
-  if (payload.due_date !== undefined) updates.due_date = payload.due_date || null
-  if (payload.paid_at !== undefined) updates.paid_at = payload.paid_at || null
+  if (payload.due_date !== undefined) updates.due_date = payload.due_date?.trim() || null
+  if (payload.paid_at !== undefined) updates.paid_at = payload.paid_at?.trim() || null
 
   if (!Object.keys(updates).length) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })

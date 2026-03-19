@@ -1,8 +1,7 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 function generateQuoteNumber() {
   const timestampPart = Date.now().toString().slice(-7)
@@ -14,63 +13,12 @@ export default function NewQuote() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
   const [creating, setCreating] = useState(false)
-  const [authReady, setAuthReady] = useState(false)
-  const [authError, setAuthError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let mounted = true
-
-    const loadAuthState = async () => {
-      const [{ data: sessionData }, { data: userData }] = await Promise.all([
-        supabase.auth.getSession(),
-        supabase.auth.getUser()
-      ])
-
-      if (!mounted) return
-
-      console.info('NEW QUOTE AUTH DEBUG:', {
-        hasSession: !!sessionData.session,
-        hasAccessToken: !!sessionData.session?.access_token,
-        userId: userData.user?.id ?? null
-      })
-
-      if (!userData.user?.id) {
-        setAuthError('Your session is not ready yet. Please wait a moment or sign in again.')
-      } else {
-        setAuthError(null)
-      }
-
-      setAuthReady(true)
-    }
-
-    void loadAuthState()
-
-    return () => {
-      mounted = false
-    }
-  }, [])
+  const [error, setError] = useState<string | null>(null)
 
   const create = async () => {
-    if (creating || !authReady) return
+    if (creating) return
     setCreating(true)
-    setAuthError(null)
-
-    const [{ data: userData }, { data: sessionData }] = await Promise.all([
-      supabase.auth.getUser(),
-      supabase.auth.getSession()
-    ])
-
-    console.info('CREATE QUOTE AUTH DEBUG:', {
-      userId: userData.user?.id ?? null,
-      hasSession: !!sessionData.session,
-      hasAccessToken: !!sessionData.session?.access_token
-    })
-
-    if (!userData.user?.id || !sessionData.session?.access_token) {
-      setAuthError('You are not authenticated in this browser tab. Please sign in again.')
-      setCreating(false)
-      return
-    }
+    setError(null)
 
     const quoteNumber = generateQuoteNumber()
 
@@ -86,10 +34,8 @@ export default function NewQuote() {
 
     const payload = (await response.json()) as { id?: string; error?: string }
 
-    console.log('CREATE QUOTE RESPONSE:', payload)
-
     if (!response.ok || !payload.id) {
-      setAuthError(payload.error ?? 'Unable to create quote.')
+      setError(payload.error ?? 'Unable to create quote.')
       setCreating(false)
       return
     }
@@ -113,12 +59,12 @@ export default function NewQuote() {
 
         <button
           onClick={create}
-          disabled={creating || !authReady}
+          disabled={creating}
           className="mt-6 inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {creating ? 'Creating draft...' : 'Create draft quote'}
         </button>
-        {authError && <p className="mt-3 text-sm text-rose-600">{authError}</p>}
+        {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
       </div>
     </div>
   )
