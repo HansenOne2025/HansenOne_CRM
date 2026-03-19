@@ -29,9 +29,6 @@ export default async function DashboardLayout({
             Companies
           </Link>
 
-          <Link href="/invoices" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
-            Invoices
-          </Link>
 
           <Link href="/portal" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
             Client Portal

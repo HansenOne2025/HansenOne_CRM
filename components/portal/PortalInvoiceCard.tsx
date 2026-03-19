@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CreditCard, CheckCircle2, Clock3 } from 'lucide-react'
 import clsx from 'clsx'
+import { formatCurrency } from '@/lib/currency'
 
 type PortalInvoice = {
   id: string
@@ -13,23 +14,23 @@ type PortalInvoice = {
   currency: string | null
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: (currency || 'USD').toUpperCase()
-  }).format(amount)
-}
-
 export default function PortalInvoiceCard({
-  invoice
+  invoice,
+  canPay
 }: {
   invoice: PortalInvoice
+  canPay: boolean
 }) {
   const [isPaying, setIsPaying] = useState(false)
 
   const isPaid = invoice.status === 'paid'
 
   const payInvoice = async () => {
+    if (!canPay) {
+      alert('Your role can view invoices but cannot pay them.')
+      return
+    }
+
     setIsPaying(true)
 
     try {
@@ -88,16 +89,16 @@ export default function PortalInvoiceCard({
 
       <button
         onClick={payInvoice}
-        disabled={isPaid || isPaying}
+        disabled={isPaid || isPaying || !canPay}
         className={clsx(
           'inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition',
-          isPaid
+          isPaid || !canPay
             ? 'cursor-not-allowed bg-slate-200 text-slate-500'
             : 'bg-slate-900 text-white hover:bg-slate-700'
         )}
       >
         <CreditCard className="h-4 w-4" />
-        {isPaid ? 'Already Paid' : isPaying ? 'Redirecting…' : 'Pay with Card'}
+        {isPaid ? 'Already Paid' : !canPay ? 'View Only Role' : isPaying ? 'Redirecting…' : 'Pay with Card'}
       </button>
     </div>
   )

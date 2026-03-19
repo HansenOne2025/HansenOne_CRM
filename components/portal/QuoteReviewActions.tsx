@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-export default function QuoteReviewActions({
-  quoteId,
-  status
-}: {
+type Props = {
   quoteId: string
   status: string
-}) {
+  canReview: boolean
+}
+
+export default function QuoteReviewActions({ quoteId, status, canReview }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [responseState, setResponseState] = useState<'accepted' | 'rejected' | null>(null)
@@ -38,6 +38,10 @@ export default function QuoteReviewActions({
 
   if (responseState === 'rejected' || status === 'rejected') {
     return <div className="text-sm font-medium text-rose-700">You declined this quote.</div>
+  }
+
+  if (!canReview) {
+    return <div className="text-xs text-slate-500">Your portal role can view quotes but cannot accept/reject them.</div>
   }
 
   return (

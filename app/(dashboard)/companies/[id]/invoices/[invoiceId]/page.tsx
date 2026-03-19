@@ -1,14 +1,8 @@
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/admin'
 import InvoiceActions from '@/components/InvoiceActions'
 import SetDueDate from '@/components/SetDueDate'
 import { notFound } from 'next/navigation'
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: (currency || 'USD').toUpperCase()
-  }).format(amount)
-}
+import { formatCurrency, normalizeCurrency } from '@/lib/currency'
 
 export default async function InvoicePage({
   params
@@ -16,9 +10,14 @@ export default async function InvoicePage({
   params: Promise<{ id: string; invoiceId: string }>
 }) {
   const { invoiceId, id } = await params
-  const supabase = await createServerSupabase()
+  const supabase = createAdminSupabase()
 
-  const { data: invoice } = await supabase.from('invoices').select('*').eq('id', invoiceId).single()
+  const { data: invoice } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('id', invoiceId)
+    .eq('company_id', id)
+    .single()
 
   if (!invoice) {
     notFound()
@@ -26,8 +25,21 @@ export default async function InvoicePage({
 
   const { data: items } = await supabase.from('invoice_items').select('*').eq('invoice_id', invoiceId)
 
-  const isOverdue = invoice?.status !== 'paid' && invoice?.due_date && new Date(invoice.due_date) < new Date()
-  const currency = (invoice.currency || 'USD').toUpperCase()
+  const isOverdue = invoice.status !== 'paid' && invoice.due_date && new Date(invoice.due_date) < new Date()
+  const currency = normalizeCurrency(invoice.currency)
+
+  const subtotal =
+    items?.reduce((sum, i) => {
+      return sum + Number(i.qty) * Number(i.unit_price)
+    }, 0) || 0
+
+  const taxTotal =
+    items?.reduce((sum, i) => {
+      const line = Number(i.qty) * Number(i.unit_price)
+      return sum + line * (Number(i.tax_rate) / 100)
+    }, 0) || 0
+
+  const total = subtotal + taxTotal
 
   return (
     <div className="space-y-4 p-6">
@@ -52,13 +64,36 @@ export default async function InvoicePage({
         <SetDueDate invoiceId={invoiceId} currentDueDate={invoice.due_date} />
       </div>
 
-      {items?.map(i => (
-        <div key={i.id} className="border p-2">
-          {i.name} — {i.qty} × {formatCurrency(Number(i.unit_price), currency)}
-        </div>
-      ))}
+      {items?.map(i => {
+        const line = Number(i.qty) * Number(i.unit_price)
+        const lineTax = line * (Number(i.tax_rate) / 100)
+        return (
+          <div key={i.id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
+            <div className="font-medium text-slate-900">{i.name}</div>
+            <div className="text-slate-600">
+              {i.qty} × {formatCurrency(Number(i.unit_price), currency)}
+            </div>
+            <div className="text-xs text-slate-500">
+              Tax ({i.tax_rate}%): {formatCurrency(lineTax, currency)} • Line total: {formatCurrency(line + lineTax, currency)}
+            </div>
+          </div>
+        )
+      })}
 
-      <div className="text-lg font-semibold">Total: {formatCurrency(Number(invoice.total), currency)}</div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
+        <div className="flex items-center justify-between text-slate-600">
+          <span>Subtotal</span>
+          <span>{formatCurrency(subtotal, currency)}</span>
+        </div>
+        <div className="flex items-center justify-between text-slate-600">
+          <span>Tax</span>
+          <span>{formatCurrency(taxTotal, currency)}</span>
+        </div>
+        <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-lg font-semibold text-slate-900">
+          <span>Total</span>
+          <span>{formatCurrency(total, currency)}</span>
+        </div>
+      </div>
     </div>
   )
 }

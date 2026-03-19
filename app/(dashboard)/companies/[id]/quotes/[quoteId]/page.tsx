@@ -2,13 +2,7 @@ import { createAdminSupabase } from '@/lib/supabase/admin'
 import AddItem from '@/components/AddQuoteItem'
 import QuoteActions from '@/components/QuoteActions'
 import QuoteItemRow from '@/components/QuoteItemRow'
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency || 'USD'
-  }).format(amount)
-}
+import { formatCurrency, normalizeCurrency } from '@/lib/currency'
 
 export default async function QuotePage({
   params
@@ -26,14 +20,19 @@ export default async function QuotePage({
 
   const { data: items } = await admin.from('quote_items').select('*').eq('quote_id', quoteId)
 
-  const total =
+  const subtotal =
     items?.reduce((sum, i) => {
-      const line = i.qty * i.unit_price
-      const tax = line * (i.tax_rate / 100)
-      return sum + line + tax
+      return sum + i.qty * i.unit_price
     }, 0) || 0
 
-  const quoteCurrency = (quote.currency || 'USD').toUpperCase()
+  const taxTotal =
+    items?.reduce((sum, i) => {
+      const line = i.qty * i.unit_price
+      return sum + line * (i.tax_rate / 100)
+    }, 0) || 0
+
+  const total = subtotal + taxTotal
+  const quoteCurrency = normalizeCurrency(quote.currency)
 
   return (
     <div className="min-h-full space-y-5 bg-slate-50 p-6">
@@ -82,6 +81,7 @@ export default async function QuotePage({
                 qty={i.qty}
                 unitPrice={i.unit_price}
                 taxRate={i.tax_rate}
+                currency={quoteCurrency}
               />
             ))}
           </div>
@@ -93,9 +93,19 @@ export default async function QuotePage({
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-slate-600">Quote total</span>
-          <span className="text-2xl font-semibold text-slate-900">{formatCurrency(total, quoteCurrency)}</span>
+        <div className="space-y-1 text-sm">
+          <div className="flex items-center justify-between text-slate-600">
+            <span>Subtotal</span>
+            <span>{formatCurrency(subtotal, quoteCurrency)}</span>
+          </div>
+          <div className="flex items-center justify-between text-slate-600">
+            <span>Tax</span>
+            <span>{formatCurrency(taxTotal, quoteCurrency)}</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-base font-semibold text-slate-900">
+            <span>Quote total</span>
+            <span>{formatCurrency(total, quoteCurrency)}</span>
+          </div>
         </div>
       </section>
     </div>

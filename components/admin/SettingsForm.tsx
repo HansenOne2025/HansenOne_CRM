@@ -8,7 +8,10 @@ type Settings = {
   smtpHost: string
   smtpPort: string
   smtpFromEmail: string
+  smtpUsername: string
+  smtpPassword: string
   quoteEmailSubject: string
+  quoteEmailBody: string
 }
 
 export default function SettingsForm({ initial }: { initial: Settings }) {
@@ -96,13 +99,46 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
         </label>
 
         <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">SMTP username</span>
+          <input
+            placeholder="smtp-user"
+            value={form.smtpUsername}
+            onChange={e => setForm(prev => ({ ...prev, smtpUsername: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-medium text-slate-700">SMTP password</span>
+          <input
+            type="password"
+            placeholder="••••••••"
+            value={form.smtpPassword}
+            onChange={e => setForm(prev => ({ ...prev, smtpPassword: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
           <span className="text-sm font-medium text-slate-700">Quote email subject</span>
           <input
-            placeholder="Your quote is ready"
+            placeholder="Quote {{quote_number}} is ready"
             value={form.quoteEmailSubject}
             onChange={e => setForm(prev => ({ ...prev, quoteEmailSubject: e.target.value }))}
             className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
           />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-medium text-slate-700">Quote email body template</span>
+          <textarea
+            rows={6}
+            placeholder={"Hello,\n\nQuote {{quote_number}} is ready.\nPortal: {{portal_url}}"}
+            value={form.quoteEmailBody}
+            onChange={e => setForm(prev => ({ ...prev, quoteEmailBody: e.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
+          />
+          <p className="text-xs text-slate-500">Variables: {'{{quote_number}}'}, {'{{company_name}}'}, {'{{portal_url}}'}</p>
         </label>
       </div>
 

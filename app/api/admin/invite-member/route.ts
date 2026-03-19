@@ -23,6 +23,10 @@ export async function POST(req: Request) {
     }
 
     const normalizedEmail = email.trim().toLowerCase()
+    if (!['owner', 'billing', 'viewer'].includes(role)) {
+      return NextResponse.json({ error: 'Invalid portal role' }, { status: 400 })
+    }
+
     if (!normalizedEmail) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
@@ -42,9 +46,6 @@ export async function POST(req: Request) {
         }
       }
     )
-
-    const { data: roleCheck } = await admin.rpc('get_role')
-    console.log('ROLE IN API:', roleCheck)
 
     const { data: existingMember, error: existingMemberError } = await admin
       .from('company_users')

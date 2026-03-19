@@ -2,6 +2,7 @@ import { createServerSupabase } from '@/lib/supabase/server'
 import AddNote from '@/components/AddNote'
 import EditableNoteCard from '@/components/EditableNoteCard'
 import Link from 'next/link'
+import EditCompanyNameForm from '@/components/admin/EditCompanyNameForm'
 
 export default async function CompanyPage({
   params
@@ -29,12 +30,20 @@ export default async function CompanyPage({
         <h1 className="text-2xl font-semibold text-slate-900">{company?.name}</h1>
         <p className="mt-1 text-sm text-slate-600">Manage quoting, client access, and internal context.</p>
 
+        <EditCompanyNameForm companyId={id} initialName={company?.name || ''} />
+
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={`/companies/${id}/quotes`}
             className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white"
           >
             Open Quotes
+          </Link>
+          <Link
+            href={`/companies/${id}/invoices`}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700"
+          >
+            Open Invoices
           </Link>
           <Link
             href={`/companies/${id}/clients`}
