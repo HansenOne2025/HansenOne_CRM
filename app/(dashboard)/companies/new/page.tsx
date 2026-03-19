@@ -1,7 +1,6 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function NewCompany() {
@@ -19,14 +18,16 @@ export default function NewCompany() {
     setSaving(true)
     setError(null)
 
-    const { data, error: insertError } = await supabase
-      .from('companies')
-      .insert({ name: trimmed })
-      .select()
-      .single()
+    const response = await fetch('/api/admin/companies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmed })
+    })
 
-    if (insertError || !data) {
-      setError(insertError?.message || 'Failed to create company')
+    const payload = (await response.json()) as { id?: string; error?: string }
+
+    if (!response.ok || !payload.id) {
+      setError(payload.error || 'Failed to create company')
       setSaving(false)
       return
     }

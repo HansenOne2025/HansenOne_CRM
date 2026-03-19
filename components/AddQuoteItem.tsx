@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function AddQuoteItem({ quoteId }: { quoteId: string }) {
@@ -12,18 +11,33 @@ export default function AddQuoteItem({ quoteId }: { quoteId: string }) {
   const [price, setPrice] = useState(0)
   const [tax, setTax] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const add = async () => {
     if (!name.trim() || qty <= 0 || saving) return
 
     setSaving(true)
-    await supabase.from('quote_items').insert({
-      quote_id: quoteId,
-      name: name.trim(),
-      qty,
-      unit_price: price,
-      tax_rate: tax
+    setError(null)
+
+    const response = await fetch('/api/admin/quote-items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        quote_id: quoteId,
+        name: name.trim(),
+        qty,
+        unit_price: price,
+        tax_rate: tax
+      })
     })
+
+    const payload = (await response.json()) as { id?: string; error?: string }
+
+    if (!response.ok || !payload.id) {
+      setError(payload.error ?? 'Unable to add item.')
+      setSaving(false)
+      return
+    }
 
     setName('')
     setQty(1)
@@ -67,6 +81,7 @@ export default function AddQuoteItem({ quoteId }: { quoteId: string }) {
           </button>
         </div>
       </div>
+      {error && <p className="text-xs text-rose-600">{error}</p>}
     </div>
   )
 }

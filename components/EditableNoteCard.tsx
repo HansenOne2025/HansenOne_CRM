@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 type Note = {
@@ -15,13 +14,27 @@ export default function EditableNoteCard({ note }: { note: Note }) {
   const [editing, setEditing] = useState(false)
   const [content, setContent] = useState(note.content)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const save = async () => {
     const trimmed = content.trim()
     if (!trimmed || saving) return
 
     setSaving(true)
-    await supabase.from('notes').update({ content: trimmed }).eq('id', note.id)
+    setError(null)
+
+    const response = await fetch(`/api/admin/notes/${note.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: trimmed })
+    })
+    const payload = (await response.json()) as { error?: string }
+    if (!response.ok) {
+      setError(payload.error ?? 'Unable to update note.')
+      setSaving(false)
+      return
+    }
+
     setSaving(false)
     setEditing(false)
     router.refresh()
@@ -30,7 +43,18 @@ export default function EditableNoteCard({ note }: { note: Note }) {
   const remove = async () => {
     if (saving) return
     setSaving(true)
-    await supabase.from('notes').delete().eq('id', note.id)
+    setError(null)
+
+    const response = await fetch(`/api/admin/notes/${note.id}`, {
+      method: 'DELETE'
+    })
+    const payload = (await response.json()) as { error?: string }
+    if (!response.ok) {
+      setError(payload.error ?? 'Unable to remove note.')
+      setSaving(false)
+      return
+    }
+
     router.refresh()
   }
 
@@ -90,6 +114,7 @@ export default function EditableNoteCard({ note }: { note: Note }) {
           )}
         </div>
       </div>
+      {error && <p className="mt-2 text-xs text-rose-600">{error}</p>}
     </article>
   )
 }

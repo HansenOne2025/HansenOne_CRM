@@ -74,33 +74,27 @@ export default function NewQuote() {
 
     const quoteNumber = generateQuoteNumber()
 
-    const { data, error } = await supabase
-      .from('quotes')
-      .insert({
+    const response = await fetch('/api/admin/quotes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         company_id: params.id,
-        status: 'draft',
         quote_number: quoteNumber,
         currency: 'USD'
       })
-      .select('id')
-      .single()
+    })
 
-    console.log('CREATE QUOTE RESPONSE:', { data, error })
+    const payload = (await response.json()) as { id?: string; error?: string }
 
-    if (error || !data) {
-      console.error('CREATE QUOTE ERROR FULL:', JSON.stringify(error, null, 2))
-      if (error?.code === '42501') {
-        setAuthError(
-          'Quote creation was blocked by RLS. Open DevTools and verify the /rest/v1/quotes request has Authorization: Bearer <token>.'
-        )
-      } else {
-        setAuthError(error?.message ?? 'Unable to create quote.')
-      }
+    console.log('CREATE QUOTE RESPONSE:', payload)
+
+    if (!response.ok || !payload.id) {
+      setAuthError(payload.error ?? 'Unable to create quote.')
       setCreating(false)
       return
     }
 
-    router.push(`/companies/${params.id}/quotes/${data.id}`)
+    router.push(`/companies/${params.id}/quotes/${payload.id}`)
   }
 
   return (

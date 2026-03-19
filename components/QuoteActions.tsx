@@ -1,6 +1,5 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
@@ -26,6 +25,7 @@ export default function QuoteActions({
   const [selectedCurrency, setSelectedCurrency] = useState((currentCurrency || 'USD').toUpperCase())
   const [showDueDateModal, setShowDueDateModal] = useState(false)
   const [dueDate, setDueDate] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const canConvert = currentStatus === 'accepted'
 
@@ -41,8 +41,20 @@ export default function QuoteActions({
 
   const updateStatus = async (status: Exclude<QuoteStatus, 'draft'>) => {
     setActiveAction(status)
+    setActionError(null)
 
-    await supabase.from('quotes').update({ status }).eq('id', quoteId)
+    const response = await fetch(`/api/admin/quotes/${quoteId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    })
+
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setActionError(payload.error ?? 'Unable to update quote status.')
+      setActiveAction(null)
+      return
+    }
 
     setActiveAction(null)
     router.refresh()
@@ -50,8 +62,20 @@ export default function QuoteActions({
 
   const updateCurrency = async (currency: string) => {
     setActiveAction('sent')
+    setActionError(null)
 
-    await supabase.from('quotes').update({ currency }).eq('id', quoteId)
+    const response = await fetch(`/api/admin/quotes/${quoteId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currency })
+    })
+
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setActionError(payload.error ?? 'Unable to update quote currency.')
+      setActiveAction(null)
+      return
+    }
 
     setSelectedCurrency(currency)
     setActiveAction(null)
@@ -60,7 +84,18 @@ export default function QuoteActions({
 
   const withdrawQuote = async () => {
     setActiveAction('withdraw')
-    await supabase.from('quotes').delete().eq('id', quoteId)
+    setActionError(null)
+
+    const response = await fetch(`/api/admin/quotes/${quoteId}`, {
+      method: 'DELETE'
+    })
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string }
+      setActionError(payload.error ?? 'Unable to withdraw quote.')
+      setActiveAction(null)
+      return
+    }
+
     setActiveAction(null)
     router.push(`/companies/${companyId}/quotes`)
   }
@@ -69,59 +104,28 @@ export default function QuoteActions({
     if (!dueDate) return
 
     setActiveAction('convert')
+    setActionError(null)
 
-    const { data: quote } = await supabase
-      .from('quotes')
-      .select('currency')
-      .eq('id', quoteId)
-      .single()
-
-    const { data: items, error } = await supabase
-      .from('quote_items')
-      .select('*')
-      .eq('quote_id', quoteId)
-
-    if (error || !items || items.length === 0) {
-      setActiveAction(null)
-      return
-    }
-
-    const total = items.reduce((sum, i) => {
-      const line = i.qty * i.unit_price
-      const tax = line * (i.tax_rate / 100)
-      return sum + line + tax
-    }, 0)
-
-    const { data: invoice, error: invoiceError } = await supabase
-      .from('invoices')
-      .insert({
+    const response = await fetch(`/api/admin/quotes/${quoteId}/convert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         company_id: companyId,
-        total,
-        status: 'draft',
         due_date: dueDate,
-        currency: (quote?.currency || selectedCurrency || 'USD').toUpperCase()
+        currency: selectedCurrency
       })
-      .select()
-      .single()
+    })
+    const payload = (await response.json()) as { invoiceId?: string; error?: string }
 
-    if (invoiceError || !invoice) {
+    if (!response.ok || !payload.invoiceId) {
+      setActionError(payload.error ?? 'Unable to convert quote.')
       setActiveAction(null)
       return
     }
-
-    await supabase.from('invoice_items').insert(
-      items.map(i => ({
-        invoice_id: invoice.id,
-        name: i.name,
-        qty: i.qty,
-        unit_price: i.unit_price,
-        tax_rate: i.tax_rate
-      }))
-    )
 
     setActiveAction(null)
     setShowDueDateModal(false)
-    router.push(`/companies/${companyId}/invoices/${invoice.id}`)
+    router.push(`/companies/${companyId}/invoices/${payload.invoiceId}`)
   }
 
   return (
@@ -179,6 +183,7 @@ export default function QuoteActions({
           {activeAction === 'withdraw' ? 'Withdrawing…' : 'Withdraw quote'}
         </button>
       </div>
+      {actionError && <p className="text-xs text-rose-600">{actionError}</p>}
 
       {showDueDateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">
