@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     .insert({
       company_id: companyId,
       status: 'draft',
+      total: 0,
       quote_number: quoteNumber,
       currency
     })
