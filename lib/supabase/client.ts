@@ -3,5 +3,12 @@ import { supabaseEnv } from './env'
 
 export const supabase = createBrowserClient(
   supabaseEnv.url,
-  supabaseEnv.key
+  supabaseEnv.key,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
 )
