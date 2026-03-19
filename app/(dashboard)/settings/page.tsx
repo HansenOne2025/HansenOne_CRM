@@ -27,7 +27,12 @@ export default async function SettingsPage() {
             smtpHost: map.get('smtp_host') ?? '',
             smtpPort: map.get('smtp_port') ?? '',
             smtpFromEmail: map.get('smtp_from_email') ?? '',
-            quoteEmailSubject: map.get('quote_email_subject') ?? 'Your quote is ready'
+            smtpUsername: map.get('smtp_username') ?? '',
+            smtpPassword: map.get('smtp_password') ?? '',
+            quoteEmailSubject: map.get('quote_email_subject') ?? 'Your quote is ready',
+            quoteEmailBody:
+              map.get('quote_email_body') ??
+              'Hello,\n\nYour quote {{quote_number}} is now ready for review.\nOpen portal: {{portal_url}}\n\nThanks.'
           }}
         />
       </div>

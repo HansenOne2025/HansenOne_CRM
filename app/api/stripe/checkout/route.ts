@@ -21,13 +21,17 @@ export async function POST(req: Request) {
 
     const { data: membership } = await supabase
       .from('company_users')
-      .select('company_id')
+      .select('company_id, role')
       .eq('user_id', user.id)
       .limit(1)
       .single()
 
     if (!membership) {
       return NextResponse.json({ error: 'No company membership found' }, { status: 403 })
+    }
+
+    if (membership.role === 'viewer') {
+      return NextResponse.json({ error: 'Your role does not allow payments' }, { status: 403 })
     }
 
     const { data: invoice } = await supabase

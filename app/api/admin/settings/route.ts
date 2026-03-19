@@ -18,7 +18,10 @@ export async function PUT(req: Request) {
     { key: 'smtp_host', value: payload.smtpHost ?? '' },
     { key: 'smtp_port', value: payload.smtpPort ?? '' },
     { key: 'smtp_from_email', value: payload.smtpFromEmail ?? '' },
-    { key: 'quote_email_subject', value: payload.quoteEmailSubject ?? 'Your quote is ready' }
+    { key: 'smtp_username', value: payload.smtpUsername ?? '' },
+    { key: 'smtp_password', value: payload.smtpPassword ?? '' },
+    { key: 'quote_email_subject', value: payload.quoteEmailSubject ?? 'Your quote is ready' },
+    { key: 'quote_email_body', value: payload.quoteEmailBody ?? '' }
   ]
 
   const { error } = await admin.from('app_settings').upsert(rows)

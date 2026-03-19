@@ -23,10 +23,11 @@ export async function PATCH(
 
   const { data: memberships } = await supabase
     .from('company_users')
-    .select('company_id')
+    .select('company_id, role')
     .eq('user_id', user.id)
 
-  const companyIds = memberships?.map(m => m.company_id) ?? []
+  const editableMemberships = memberships?.filter(m => m.role === 'owner' || m.role === 'billing') ?? []
+  const companyIds = editableMemberships.map(m => m.company_id)
 
   const { data: quote } = await supabase
     .from('quotes')

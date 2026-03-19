@@ -1,0 +1,15 @@
+-- New SQL changes for this update
+
+-- Restrict portal quote updates so viewer members are read-only.
+DROP POLICY IF EXISTS "portal_quotes_update" ON public.quotes;
+create policy "portal_quotes_update"
+on public.quotes
+for update
+using (
+  exists (
+    select 1 from public.company_users cu
+    where cu.company_id = quotes.company_id
+      and cu.user_id = auth.uid()
+      and cu.role in ('owner', 'billing')
+  )
+);

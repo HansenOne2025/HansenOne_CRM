@@ -6,6 +6,7 @@ import { createServerSupabase } from '@/lib/supabase/server'
 type ConvertPayload = {
   company_id?: string
   due_date?: string
+  currency?: string
 }
 
 export async function POST(
@@ -25,6 +26,7 @@ export async function POST(
   const payload = (await req.json()) as ConvertPayload
   const companyId = payload.company_id?.trim()
   const dueDate = payload.due_date?.trim()
+  const currency = payload.currency?.trim().toUpperCase() || 'USD'
 
   if (!companyId || !dueDate) {
     return NextResponse.json({ error: 'company_id and due_date are required' }, { status: 400 })
@@ -63,7 +65,8 @@ export async function POST(
       company_id: companyId,
       total,
       status: 'draft',
-      due_date: dueDate
+      due_date: dueDate,
+      currency
     })
     .select('id')
     .single()

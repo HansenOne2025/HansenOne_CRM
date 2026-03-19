@@ -1,6 +1,12 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import PortalInvoiceCard from '@/components/portal/PortalInvoiceCard'
 
+type Membership = {
+  company_id: string
+  role: 'owner' | 'billing' | 'viewer'
+  companies: { name: string }[] | { name: string } | null
+}
+
 export default async function PortalHomePage() {
   const supabase = await createServerSupabase()
 
@@ -21,10 +27,7 @@ export default async function PortalHomePage() {
     .select('company_id, role, companies(name)')
     .eq('user_id', user?.id)
 
-  const memberships = (membershipsData ?? []) as Array<{
-    company_id: string
-    companies: { name: string }[] | { name: string } | null
-  }>
+  const memberships = (membershipsData ?? []) as Membership[]
 
   const companyIds = memberships.map(m => m.company_id)
 
@@ -38,6 +41,7 @@ export default async function PortalHomePage() {
   const companyName = Array.isArray(firstCompany)
     ? firstCompany[0]?.name ?? 'Your Company'
     : firstCompany?.name ?? 'Your Company'
+  const roleByCompanyId = new Map(memberships.map(m => [m.company_id, m.role]))
 
   return (
     <div className="space-y-8">
@@ -60,7 +64,11 @@ export default async function PortalHomePage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {invoices.map(invoice => (
-              <PortalInvoiceCard key={invoice.id} invoice={invoice} />
+              <PortalInvoiceCard
+                key={invoice.id}
+                invoice={invoice}
+                canPay={(roleByCompanyId.get(invoice.company_id) ?? 'viewer') !== 'viewer'}
+              />
             ))}
           </div>
         )}

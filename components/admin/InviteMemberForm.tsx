@@ -147,9 +147,9 @@ export default function InviteMemberForm({ companyId, existingMembers }: Props) 
           onChange={e => setRole(e.target.value as 'owner' | 'billing' | 'viewer')}
           className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900"
         >
-          <option value="owner">Owner</option>
-          <option value="billing">Billing</option>
-          <option value="viewer">Viewer</option>
+          <option value="owner">Owner (can review quotes + pay)</option>
+          <option value="billing">Billing (can review quotes + pay)</option>
+          <option value="viewer">Viewer (login only)</option>
         </select>
       </label>
 
