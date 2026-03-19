@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/admin'
 import AddItem from '@/components/AddQuoteItem'
 import QuoteActions from '@/components/QuoteActions'
 import QuoteItemRow from '@/components/QuoteItemRow'
@@ -16,15 +16,15 @@ export default async function QuotePage({
   params: Promise<{ id: string; quoteId: string }>
 }) {
   const { id, quoteId } = await params
-  const supabase = await createServerSupabase()
+  const admin = createAdminSupabase()
 
-  const { data: quote } = await supabase
+  const { data: quote } = await admin
     .from('quotes')
     .select('*')
     .eq('id', quoteId)
     .single()
 
-  const { data: items } = await supabase.from('quote_items').select('*').eq('quote_id', quoteId)
+  const { data: items } = await admin.from('quote_items').select('*').eq('quote_id', quoteId)
 
   const total =
     items?.reduce((sum, i) => {
