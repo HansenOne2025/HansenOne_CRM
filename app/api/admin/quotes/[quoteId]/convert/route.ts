@@ -4,8 +4,8 @@ import { isAdminUser } from '@/lib/supabase/admin-auth'
 import { createServerSupabase } from '@/lib/supabase/server'
 
 type ConvertPayload = {
-  companyId?: string
-  dueDate?: string
+  company_id?: string
+  due_date?: string
   currency?: string
 }
 
@@ -24,12 +24,12 @@ export async function POST(
 
   const { quoteId } = await params
   const payload = (await req.json()) as ConvertPayload
-  const companyId = payload.companyId?.trim()
-  const dueDate = payload.dueDate?.trim()
+  const companyId = payload.company_id?.trim()
+  const dueDate = payload.due_date?.trim()
   const fallbackCurrency = (payload.currency?.trim() || 'USD').toUpperCase()
 
   if (!companyId || !dueDate) {
-    return NextResponse.json({ error: 'companyId and dueDate are required' }, { status: 400 })
+    return NextResponse.json({ error: 'company_id and due_date are required' }, { status: 400 })
   }
 
   let admin

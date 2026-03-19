@@ -23,11 +23,11 @@ export default function AddQuoteItem({ quoteId }: { quoteId: string }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        quoteId,
+        quote_id: quoteId,
         name: name.trim(),
         qty,
-        unitPrice: price,
-        taxRate: tax
+        unit_price: price,
+        tax_rate: tax
       })
     })
 

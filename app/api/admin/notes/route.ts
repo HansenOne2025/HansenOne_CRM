@@ -4,7 +4,7 @@ import { isAdminUser } from '@/lib/supabase/admin-auth'
 import { createServerSupabase } from '@/lib/supabase/server'
 
 type CreateNotePayload = {
-  companyId?: string
+  company_id?: string
   content?: string
 }
 
@@ -19,10 +19,10 @@ export async function POST(req: Request) {
   }
 
   const payload = (await req.json()) as CreateNotePayload
-  const companyId = payload.companyId?.trim()
+  const companyId = payload.company_id?.trim()
   const content = payload.content?.trim()
   if (!companyId || !content) {
-    return NextResponse.json({ error: 'companyId and content are required' }, { status: 400 })
+    return NextResponse.json({ error: 'company_id and content are required' }, { status: 400 })
   }
 
   let admin

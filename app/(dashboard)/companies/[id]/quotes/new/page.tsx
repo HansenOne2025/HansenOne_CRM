@@ -78,8 +78,8 @@ export default function NewQuote() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        companyId: params.id,
-        quoteNumber,
+        company_id: params.id,
+        quote_number: quoteNumber,
         currency: 'USD'
       })
     })

@@ -6,8 +6,8 @@ import { createServerSupabase } from '@/lib/supabase/server'
 type UpdateInvoicePayload = {
   status?: string
   currency?: string
-  dueDate?: string | null
-  paidAt?: string | null
+  due_date?: string | null
+  paid_at?: string | null
 }
 
 async function authorizeAdmin() {
@@ -32,8 +32,8 @@ export async function PATCH(
   const updates: Record<string, string | null> = {}
   if (payload.status) updates.status = payload.status
   if (payload.currency) updates.currency = payload.currency.trim().toUpperCase()
-  if (payload.dueDate !== undefined) updates.due_date = payload.dueDate || null
-  if (payload.paidAt !== undefined) updates.paid_at = payload.paidAt || null
+  if (payload.due_date !== undefined) updates.due_date = payload.due_date || null
+  if (payload.paid_at !== undefined) updates.paid_at = payload.paid_at || null
 
   if (!Object.keys(updates).length) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })

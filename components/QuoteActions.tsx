@@ -110,8 +110,8 @@ export default function QuoteActions({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        companyId,
-        dueDate,
+        company_id: companyId,
+        due_date: dueDate,
         currency: selectedCurrency
       })
     })

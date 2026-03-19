@@ -16,7 +16,7 @@ export default function SetDueDate({
     await fetch(`/api/admin/invoices/${invoiceId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dueDate: e.target.value })
+      body: JSON.stringify({ due_date: e.target.value })
     })
 
     router.refresh()

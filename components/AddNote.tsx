@@ -21,7 +21,7 @@ export default function AddNote({ companyId }: { companyId: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content: trimmed,
-        companyId
+        company_id: companyId
       })
     })
 

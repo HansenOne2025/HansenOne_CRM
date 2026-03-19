@@ -4,8 +4,8 @@ import { isAdminUser } from '@/lib/supabase/admin-auth'
 import { createServerSupabase } from '@/lib/supabase/server'
 
 type CreateQuotePayload = {
-  companyId?: string
-  quoteNumber?: string
+  company_id?: string
+  quote_number?: string
   currency?: string
 }
 
@@ -20,12 +20,12 @@ export async function POST(req: Request) {
   }
 
   const payload = (await req.json()) as CreateQuotePayload
-  const companyId = payload.companyId?.trim()
-  const quoteNumber = payload.quoteNumber?.trim()
+  const companyId = payload.company_id?.trim()
+  const quoteNumber = payload.quote_number?.trim()
   const currency = (payload.currency?.trim() || 'USD').toUpperCase()
 
   if (!companyId || !quoteNumber) {
-    return NextResponse.json({ error: 'Missing companyId or quoteNumber' }, { status: 400 })
+    return NextResponse.json({ error: 'Missing company_id or quote_number' }, { status: 400 })
   }
 
   let admin
