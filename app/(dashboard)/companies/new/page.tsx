@@ -19,10 +19,14 @@ export default function NewCompany() {
     setSaving(true)
     setError(null)
 
-    const { error: insertError } = await supabase.from('companies').insert({ name: trimmed })
+    const { data, error: insertError } = await supabase
+      .from('companies')
+      .insert({ name: trimmed })
+      .select()
+      .single()
 
-    if (insertError) {
-      setError(insertError.message)
+    if (insertError || !data) {
+      setError(insertError?.message || 'Failed to create company')
       setSaving(false)
       return
     }

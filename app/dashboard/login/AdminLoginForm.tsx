@@ -47,9 +47,6 @@ export default function AdminLoginForm({ initialError, nextPath }: AdminLoginFor
       <div className="mx-auto mt-20 max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur">
         <p className="mb-2 text-sm uppercase tracking-widest text-slate-300">HansenOne</p>
         <h1 className="mb-2 text-2xl font-semibold">Admin Login</h1>
-        <p className="mb-6 text-sm text-slate-300">
-          Sign in with an admin account UUID listed in ADMIN_USER_UUIDS.
-        </p>
 
         <form onSubmit={submit} className="space-y-4">
           <input

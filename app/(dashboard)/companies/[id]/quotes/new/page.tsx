@@ -21,7 +21,7 @@ export default function NewQuote() {
 
     const quoteNumber = generateQuoteNumber()
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('quotes')
       .insert({
         company_id: params.id,
@@ -29,8 +29,16 @@ export default function NewQuote() {
         quote_number: quoteNumber,
         currency: 'USD'
       })
-      .select()
+      .select('id')
       .single()
+
+    console.log('CREATE QUOTE RESPONSE:', { data, error })
+
+    if (error || !data) {
+      console.error('CREATE QUOTE ERROR FULL:', JSON.stringify(error, null, 2))
+      setCreating(false)
+      return
+    }
 
     router.push(`/companies/${params.id}/quotes/${data.id}`)
   }
