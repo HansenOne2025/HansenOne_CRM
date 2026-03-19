@@ -1,6 +1,5 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -19,6 +18,7 @@ export default function QuoteItemRow({
 }) {
   const router = useRouter()
   const [removing, setRemoving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const line = qty * unitPrice
   const tax = line * (taxRate / 100)
@@ -27,7 +27,19 @@ export default function QuoteItemRow({
   const remove = async () => {
     if (removing) return
     setRemoving(true)
-    await supabase.from('quote_items').delete().eq('id', id)
+    setError(null)
+
+    const response = await fetch(`/api/admin/quote-items/${id}`, {
+      method: 'DELETE'
+    })
+    const payload = (await response.json()) as { error?: string }
+
+    if (!response.ok) {
+      setError(payload.error ?? 'Unable to remove quote item.')
+      setRemoving(false)
+      return
+    }
+
     router.refresh()
   }
 
@@ -47,6 +59,7 @@ export default function QuoteItemRow({
           Remove
         </button>
       </div>
+      {error && <p className="col-span-12 text-xs text-rose-600">{error}</p>}
     </div>
   )
 }
