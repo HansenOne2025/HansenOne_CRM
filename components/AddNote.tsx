@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function AddNote({ companyId }: { companyId: string }) {
   const [content, setContent] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const add = async () => {
@@ -14,11 +14,23 @@ export default function AddNote({ companyId }: { companyId: string }) {
     if (!trimmed || saving) return
 
     setSaving(true)
+    setError(null)
 
-    await supabase.from('notes').insert({
-      content: trimmed,
-      company_id: companyId
+    const response = await fetch('/api/admin/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: trimmed,
+        companyId
+      })
     })
+
+    const payload = (await response.json()) as { id?: string; error?: string }
+    if (!response.ok || !payload.id) {
+      setError(payload.error ?? 'Unable to save note.')
+      setSaving(false)
+      return
+    }
 
     setContent('')
     setSaving(false)
@@ -48,6 +60,7 @@ export default function AddNote({ companyId }: { companyId: string }) {
           {saving ? 'Saving...' : 'Add Note'}
         </button>
       </div>
+      {error && <p className="text-xs text-rose-600">{error}</p>}
     </div>
   )
 }
