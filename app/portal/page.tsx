@@ -1,4 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/admin'
+import { getStripe } from '@/lib/stripe/server'
 import PortalInvoiceCard from '@/components/portal/PortalInvoiceCard'
 
 type Membership = {
@@ -7,8 +9,13 @@ type Membership = {
   companies: { name: string }[] | { name: string } | null
 }
 
-export default async function PortalHomePage() {
+type PageProps = {
+  searchParams?: Promise<{ paid?: string; session_id?: string }>
+}
+
+export default async function PortalHomePage({ searchParams }: PageProps) {
   const supabase = await createServerSupabase()
+  const params = (await searchParams) ?? {}
 
   const {
     data: { user }
@@ -28,8 +35,51 @@ export default async function PortalHomePage() {
     .eq('user_id', user?.id)
 
   const memberships = (membershipsData ?? []) as Membership[]
-
   const companyIds = memberships.map(m => m.company_id)
+
+  if (params.paid === '1' && params.session_id && companyIds.length) {
+    const session = await getStripe().checkout.sessions.retrieve(params.session_id)
+    const invoiceId = session.metadata?.invoiceId
+    const companyId = session.metadata?.companyId
+
+    if (invoiceId && companyId && companyIds.includes(companyId)) {
+      try {
+        const supabaseAdmin = createAdminSupabase()
+
+        await supabaseAdmin
+          .from('invoices')
+          .update({
+            status: 'paid',
+            paid_at: new Date().toISOString(),
+            stripe_payment_intent_id:
+              typeof session.payment_intent === 'string' ? session.payment_intent : null
+          })
+          .eq('id', invoiceId)
+          .eq('company_id', companyId)
+
+        const { data: existingPayment } = await supabaseAdmin
+          .from('invoice_payments')
+          .select('id')
+          .eq('stripe_checkout_session_id', session.id)
+          .maybeSingle()
+
+        if (!existingPayment) {
+          await supabaseAdmin.from('invoice_payments').insert({
+            invoice_id: invoiceId,
+            amount: Number(session.amount_total ?? 0) / 100,
+            currency: session.currency ?? 'usd',
+            stripe_checkout_session_id: session.id,
+            stripe_payment_intent_id:
+              typeof session.payment_intent === 'string' ? session.payment_intent : null,
+            paid_at: new Date().toISOString()
+          })
+        }
+      } catch {
+        // If admin credentials are unavailable, rely on webhook processing.
+      }
+    }
+  }
+
 
   const { data: invoices } = await supabase
     .from('invoices')

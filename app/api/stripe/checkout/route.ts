@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     const session = await getStripe().checkout.sessions.create({
       mode: 'payment',
-      success_url: `${appUrl}/portal?paid=1`,
+      success_url: `${appUrl}/portal?paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/portal?canceled=1`,
       line_items: [
         {
