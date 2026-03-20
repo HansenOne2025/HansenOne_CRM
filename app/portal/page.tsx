@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe/server'
 import PortalInvoiceCard from '@/components/portal/PortalInvoiceCard'
 
@@ -37,13 +38,15 @@ export default async function PortalHomePage({ searchParams }: PageProps) {
   const companyIds = memberships.map(m => m.company_id)
 
   if (params.paid === '1' && params.session_id && companyIds.length) {
-    try {
-      const session = await getStripe().checkout.sessions.retrieve(params.session_id)
-      const invoiceId = session.metadata?.invoiceId
-      const companyId = session.metadata?.companyId
+    const session = await getStripe().checkout.sessions.retrieve(params.session_id)
+    const invoiceId = session.metadata?.invoiceId
+    const companyId = session.metadata?.companyId
 
-      if (invoiceId && companyId && companyIds.includes(companyId)) {
-        await supabase
+    if (invoiceId && companyId && companyIds.includes(companyId)) {
+      try {
+        const supabaseAdmin = createAdminSupabase()
+
+        await supabaseAdmin
           .from('invoices')
           .update({
             status: 'paid',
@@ -54,14 +57,14 @@ export default async function PortalHomePage({ searchParams }: PageProps) {
           .eq('id', invoiceId)
           .eq('company_id', companyId)
 
-        const { data: existingPayment } = await supabase
+        const { data: existingPayment } = await supabaseAdmin
           .from('invoice_payments')
           .select('id')
           .eq('stripe_checkout_session_id', session.id)
           .maybeSingle()
 
         if (!existingPayment) {
-          await supabase.from('invoice_payments').insert({
+          await supabaseAdmin.from('invoice_payments').insert({
             invoice_id: invoiceId,
             amount: Number(session.amount_total ?? 0) / 100,
             currency: session.currency ?? 'usd',
@@ -71,9 +74,9 @@ export default async function PortalHomePage({ searchParams }: PageProps) {
             paid_at: new Date().toISOString()
           })
         }
+      } catch {
+        // If admin credentials are unavailable, rely on webhook processing.
       }
-    } catch {
-      // Ignore and rely on webhook processing when session verification fails.
     }
   }
 
