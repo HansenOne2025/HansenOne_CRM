@@ -51,11 +51,12 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">Stripe publishable key</span>
           <input
-            placeholder="pk_live_..."
+            placeholder="pk_test_51... or pk_live_51..."
             value={form.stripePublishableKey}
             onChange={e => setForm(prev => ({ ...prev, stripePublishableKey: e.target.value }))}
             className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-slate-900"
           />
+          <p className="text-xs text-slate-500">Keep your Stripe secret key in STRIPE_SECRET_KEY on the server env.</p>
         </label>
 
         <label className="mt-7 inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 md:mt-0">

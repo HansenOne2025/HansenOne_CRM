@@ -35,6 +35,7 @@ export default async function PortalHomePage() {
     .from('invoices')
     .select('id,total,status,due_date,created_at,company_id,currency')
     .in('company_id', companyIds)
+    .eq('status', 'sent')
     .order('created_at', { ascending: false })
 
   const firstCompany = memberships?.[0]?.companies
