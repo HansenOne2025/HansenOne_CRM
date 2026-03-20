@@ -25,8 +25,10 @@ export async function POST(req: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const invoiceId = session.metadata?.invoiceId
+    const companyId = session.metadata?.companyId
+    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null
 
-    if (invoiceId) {
+    if (session.payment_status === 'paid' && invoiceId) {
       let supabaseAdmin
       try {
         supabaseAdmin = createAdminSupabase()
@@ -35,25 +37,37 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: message }, { status: 500 })
       }
 
-      await supabaseAdmin
+      let invoiceUpdate = supabaseAdmin
         .from('invoices')
         .update({
           status: 'paid',
           paid_at: new Date().toISOString(),
-          stripe_payment_intent_id:
-            typeof session.payment_intent === 'string' ? session.payment_intent : null
+          stripe_payment_intent_id: paymentIntentId
         })
         .eq('id', invoiceId)
 
-      await supabaseAdmin.from('invoice_payments').insert({
-        invoice_id: invoiceId,
-        amount: Number(session.amount_total ?? 0) / 100,
-        currency: session.currency ?? 'usd',
-        stripe_checkout_session_id: session.id,
-        stripe_payment_intent_id:
-          typeof session.payment_intent === 'string' ? session.payment_intent : null,
-        paid_at: new Date().toISOString()
-      })
+      if (companyId) {
+        invoiceUpdate = invoiceUpdate.eq('company_id', companyId)
+      }
+
+      await invoiceUpdate
+
+      const { data: existingPayment } = await supabaseAdmin
+        .from('invoice_payments')
+        .select('id')
+        .eq('stripe_checkout_session_id', session.id)
+        .maybeSingle()
+
+      if (!existingPayment) {
+        await supabaseAdmin.from('invoice_payments').insert({
+          invoice_id: invoiceId,
+          amount: Number(session.amount_total ?? 0) / 100,
+          currency: session.currency ?? 'usd',
+          stripe_checkout_session_id: session.id,
+          stripe_payment_intent_id: paymentIntentId,
+          paid_at: new Date().toISOString()
+        })
+      }
     }
   }
 
